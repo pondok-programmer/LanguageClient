@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PromiseKit
+import Promise
 
 ///
 /// An entity that can send JSON RPC messages.

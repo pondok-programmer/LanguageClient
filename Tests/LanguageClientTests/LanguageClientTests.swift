@@ -3,7 +3,7 @@ import XCTest
 
 class LanguageServerTests: XCTestCase {
   
-  let languageServerPath = URL(fileURLWithPath: "/Users/pmacrory/dev/ui/sourcekit-lsp/.build/x86_64-apple-macosx/debug/sourcekit-lsp")
+  let languageServerPath = URL(fileURLWithPath: "/Users/muis/Desktop/sourcekit-lsp/.build/x86_64-apple-macosx/debug/sourcekit-lsp")
       .standardizedFileURL.absoluteString
   
   let packagePath = URL(fileURLWithPath: #file + "../../../../TestPackage/")
@@ -18,7 +18,7 @@ class LanguageServerTests: XCTestCase {
     let expectation = XCTestExpectation(description: "Wait for server capabilities")
     
     _ = client.startServer(atPath: languageServerPath, sourcePath: packagePath)
-      .done { result in
+      .then { result in
       if client.capabilities != nil {
         expectation.fulfill()
         return
@@ -88,7 +88,7 @@ class LanguageServerTests: XCTestCase {
                                                                                 character: 12)))
     
     _ = client.send(message: completionMessage, responseType: CompletionResult.self)
-      .done { result in
+      .then { result in
       if !result.items.isEmpty {
         completionExpectation.fulfill()
       }
@@ -125,7 +125,7 @@ class LanguageServerTests: XCTestCase {
                                                                                 character: 3)))
     
     _ = client.send(message: completionMessage, responseType: CompletionResult.self)
-      .done { result in
+      .then { result in
         if !result.items.isEmpty {
           if result.items.contains(where: { $0.label.contains("hello()") }) {
             completionExpectation.fulfill()

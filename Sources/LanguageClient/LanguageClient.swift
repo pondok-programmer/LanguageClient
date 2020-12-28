@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PromiseKit
+import Promise
 
 public protocol LanguageClientNotificationDelegate {
   func receive(diagnostics: [Diagnostic])
@@ -115,7 +115,7 @@ public class LanguageClient {
     
     let promise = send(message: initialize, responseType: InitializeResult.self)
     
-    _ = promise.done { [weak self] result in
+    _ = promise.then { [weak self] result in
       self?.capabilities = result.capabilities
     }
       

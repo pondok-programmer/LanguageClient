@@ -13,14 +13,14 @@ let package = Package(
                targets: ["LanguageClient"])
     ],
     dependencies: [
-      .package(url: "https://github.com/mxcl/PromiseKit", from: "6.8.0")
+      .package(url: "https://github.com/khanlou/Promise", from: "2.0.1")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "LanguageClient",
-            dependencies: ["PromiseKit"]),
+            dependencies: ["Promise"]),
         .testTarget(
             name: "LanguageClientTests",
             dependencies: ["LanguageClient"]),

@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "Promises",
+        "repositoryURL": "https://github.com/khanlou/Promise",
+        "state": {
+          "branch": null,
+          "revision": "7de01494163478adb1aa83740914a4ca29059169",
+          "version": "2.0.4"
+        }
+      },
+      {
         "package": "PromiseKit",
         "repositoryURL": "https://github.com/mxcl/PromiseKit",
         "state": {

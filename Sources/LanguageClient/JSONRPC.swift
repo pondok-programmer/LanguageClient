@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PromiseKit
+import Promise
 
 public enum JSONRPCError: Error {
   case unknown
@@ -162,17 +162,17 @@ public class JSONRPCChannel: JSONRPCMessageSender {
   /// Shutdown the channel and clean up all resources.
   ///
   public func shutdownChannel() -> Promise<Bool> {
-    return Promise { resolver in
-      backgroundQueue.async { [weak self] in
-        if self?.process.isRunning == true {
-          self?.process.terminate()
+    return Promise { [weak self](fulfill, reject) in
+        self?.backgroundQueue.async { [weak self] in
+          if self?.process.isRunning == true {
+            self?.process.terminate()
+          }
+          self?.processInput.fileHandleForWriting.closeFile()
+          self?.processOutput.fileHandleForReading.closeFile()
+          fulfill(true)
+          self?.responseIO.close(flags: .stop)
+          self?.writeIO.close(flags: .stop)
         }
-        self?.processInput.fileHandleForWriting.closeFile()
-        self?.processOutput.fileHandleForReading.closeFile()
-        resolver.fulfill(true)
-        self?.responseIO.close(flags: .stop)
-        self?.writeIO.close(flags: .stop)
-      }
     }
   }
 
@@ -182,27 +182,30 @@ public class JSONRPCChannel: JSONRPCMessageSender {
   ///
   public func send<T: JSONRPCMessage, R: JSONRPCResult>(message: T,
                                                  responseType: R.Type) -> Promise<R> {
-    return Promise<R>() { resolver in
-      backgroundQueue.async { [weak self] in
-        guard let `self` = self else { return }
-        let messageId = self.nextId
-      
-        var msg = message
-        msg.id = messageId
-
-        guard let messageData = self.prepare(message: msg) else {
-          resolver.reject(JSONRPCError.unknown)
-          return
-        }
+    return Promise<R> { [weak self](fulfill, reject) in
         
-        self.write(data: messageData)
-
-        let resultQueueEntry: JSONRPCPendingResult = { [weak self] data in
-          self?.sendResultMessage(data: data, resolver: resolver)
-        }
+        let resolver = Resolver(fulfill: fulfill, reject: reject)
         
-        self.pendingResults[messageId] = resultQueueEntry
-      }
+        self?.backgroundQueue.async { [weak self] in
+            guard let `self` = self else { return }
+            let messageId = self.nextId
+            
+            var msg = message
+            msg.id = messageId
+            
+            guard let messageData = self.prepare(message: msg) else {
+                resolver.reject(JSONRPCError.unknown)
+                return
+            }
+            
+            self.write(data: messageData)
+            
+            let resultQueueEntry: JSONRPCPendingResult = { [weak self] data in
+                self?.sendResultMessage(data: data, resolver: resolver)
+            }
+            
+            self.pendingResults[messageId] = resultQueueEntry
+        }
     }
   }
   
